@@ -1,0 +1,39 @@
+# 复制为 .dev.vars 后填入真实值；.dev.vars 已被 .gitignore 忽略。
+# 仅 scripts/setup-access.mjs 与本地开发需要用到，Worker 运行时不需要这些凭证。
+
+# Cloudflare Account ID：dash.cloudflare.com 右侧栏可复制
+CF_ACCOUNT_ID=
+
+# API Token，创建入口 https://dash.cloudflare.com/profile/api-tokens
+# 必须是 Edit/Write 级别（只有 Read 时 GET 全 200、POST 会 403/1010 auth.forbidden）：
+#   - Account · Access: Organizations, Identity Providers, and Groups → Edit
+#   - Account · Access: Apps and Policies → Edit
+#   - Account · Account Settings → Read
+#   - Account · Workers Scripts → Edit、Zone · DNS → Edit（wrangler deploy 时用）
+# Account Resources 需包含本账号；IP 过滤 / TTL 不要挡住当前出口 IP。
+CF_API_TOKEN=
+
+# 兜底：若 API Token 权限始终配不齐，可改用全局密钥（权限很大，仅限本机，勿提交）。
+# 同时填写下面两项时，脚本自动改用 X-Auth-Email / X-Auth-Key 认证。
+CF_API_EMAIL=
+CF_GLOBAL_API_KEY=
+
+# Zero Trust team name（不含域名后缀），例如 my-team
+CF_TEAM_NAME=
+
+# 应用要绑定的域名（必须是由该 Cloudflare 账号托管并开启代理的域名）
+APP_DOMAIN=auth.example.com
+
+# 允许登录的邮箱，逗号分隔；留空则改用 ALLOWED_EMAIL_DOMAIN
+ALLOWED_EMAILS=you@example.com
+
+# 可选：允许整个邮箱域（与 ALLOWED_EMAILS 二选一或并存）
+ALLOWED_EMAIL_DOMAIN=
+
+# GitHub OAuth App 的 Client ID / Secret（https://github.com/settings/developers）
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+
+# Google Cloud OAuth Client 的 Client ID / Secret
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

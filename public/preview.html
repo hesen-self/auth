@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Identity Console · 身份信息</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0e14;--surface:#121821;--surface-2:#171f2b;--line:#252e3c;--text:#e6edf3;--muted:#8b98a9;--accent:#f6821f;--blue:#5b9dff;--green:#3fb950;--purple:#b47cff;--red:#f85149}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.6;font-size:14px}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px 80px}
+.topbar{border-bottom:1px solid var(--line);background:rgba(18,24,33,.85);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10}
+.topbar-in{max-width:1160px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:.2px}
+.brand-mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),#ffb35c);display:grid;place-items:center;color:#1a1206;font-weight:800;font-size:13px}
+.topbar .spacer{flex:1}
+.pill{font-size:12px;padding:4px 11px;border-radius:99px;border:1px solid var(--line);color:var(--muted);background:var(--surface)}
+.pill.live{color:var(--green);border-color:#1d4b2b;background:#10251a}
+.pill.dev{color:var(--accent);border-color:#5a3a17;background:#2a1c0d}
+.btn{font-size:12px;padding:7px 13px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#1a1206;font-weight:650}
+.btn.primary:hover{filter:brightness(1.1);color:#1a1206}
+.hero{display:flex;gap:24px;align-items:center;padding:38px 0 30px;flex-wrap:wrap}
+.avatar{width:82px;height:82px;border-radius:22px;background:linear-gradient(145deg,#22304a,#3a2a52);border:1px solid #3a4459;display:grid;place-items:center;font-size:31px;font-weight:700;color:#d7e3ff;flex:none}
+.hero-main{flex:1;min-width:260px}
+.hero h1{margin:0;font-size:27px;letter-spacing:-.4px}
+.hero .email{color:var(--muted);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:14px;margin-top:3px}
+.hero-tags{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tag{font-size:12px;padding:4px 10px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.tag.hl{color:var(--accent);border-color:#5a3a17;background:#2a1c0d}
+.tag.ok{color:var(--green);border-color:#1d4b2b;background:#10251a}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:34px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.fact .label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.fact .value{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;margin-top:5px;word-break:break-all}
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:36px 0 14px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:"";flex:1;height:1px;background:var(--line)}
+.methods{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.method{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;position:relative;overflow:hidden}
+.method.active{border-color:var(--accent);background:linear-gradient(160deg,#22190e,var(--surface) 60%)}
+.method.active::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent)}
+.method .icon{width:34px;height:34px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;color:var(--text);margin-bottom:12px}
+.method.active .icon{color:var(--accent);border-color:#5a3a17}
+.method h3{margin:0;font-size:15px}
+.method p{margin:5px 0 0;color:var(--muted);font-size:12px;min-height:34px}
+.method .state{font-size:11px;margin-top:12px;color:var(--muted)}
+.method.active .state{color:var(--accent);font-weight:650}
+.sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+.source{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px;display:flex;gap:12px;align-items:flex-start}
+.source .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);margin-top:7px;flex:none}
+.source.on .dot{background:var(--green);box-shadow:0 0 9px rgba(63,185,80,.5)}
+.source .s-main{flex:1;min-width:0}
+.source .s-name{font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all}
+.source .s-reason{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.chip{font-size:10.5px;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.chip.ok{color:var(--green);background:#10251a;border:1px solid #1d4b2b}
+.chip.off{color:var(--muted);background:var(--surface-2);border:1px solid var(--line)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-top:14px;overflow:hidden}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:12px;background:var(--surface-2)}
+.panel-head h2{margin:0;font-size:15px}
+.panel-head p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.badge{font-size:11px;color:var(--accent);border:1px solid #5a3a17;background:#2a1c0d;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.panel-body{padding:6px 20px 18px}
+.field{border-bottom:1px dashed #202836;padding:9px 0}
+.field:last-child{border-bottom:none}
+.field-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.key{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;color:var(--blue);font-weight:600}
+.note{font-size:11.5px;color:var(--muted);flex:1;min-width:180px}
+.type{font-size:10px;color:#6c7889;font-family:ui-monospace,monospace}
+.field-body{padding-left:12px;border-left:1px solid #222b38;margin-top:4px}
+.scalar{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;color:#d5dee9;word-break:break-all;white-space:pre-wrap}
+.fields>.field>.field-body>.fields{margin-top:2px}
+.empty{color:#697586;font-size:12px;font-style:italic;padding:6px 0}
+.json-block{background:#0c1118;border:1px solid var(--line);border-radius:9px;padding:12px;font-size:12px;overflow:auto;color:#c8d4e2;margin:8px 0}
+pre.raw{background:#0c1118;border:1px solid var(--line);border-radius:10px;padding:18px;overflow:auto;max-height:460px;font-size:12px;color:#c8d4e2;line-height:1.5;margin:0}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 0}
+.notice{background:#1a1509;border:1px solid #5a3a17;border-radius:12px;padding:16px 18px;color:#e7c79a;font-size:13px;margin-top:14px}
+.notice strong{color:var(--accent)}
+.limits{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+.limits h3{margin:0 0 8px;font-size:14px;color:var(--text)}
+.limits ul{margin:0;padding-left:20px;color:var(--muted);font-size:12.5px}
+.limits li{margin:6px 0}
+.limits code{font-family:ui-monospace,monospace;color:var(--blue);font-size:12px}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:#657184;font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+@media(max-width:780px){.methods{grid-template-columns:1fr}.hero{padding-top:26px}.wrap{padding:0 16px 60px}.topbar-in{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-in">
+  <div class="brand"><span class="brand-mark">CF</span><span>Identity Console</span></div>
+  <span class="spacer"></span>
+  <span class="pill dev">本地 dev 身份</span>
+  <span class="pill">2026/11/6 17:30:49 UTC+8</span>
+</div></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="avatar">LD</div>
+    <div class="hero-main">
+      <h1>Local Dev User</h1>
+      <div class="email">dev@example.com</div>
+      <div class="hero-tags">
+        <span class="tag hl">GitHub</span>
+        <span class="tag ok">已通过 Access 认证</span>
+        <span class="tag">本地 dev 身份</span>
+        <span class="tag">JWT 验签待配置</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="btn" title="本地预览环境不提供真实登出">切换登录方式（部署后可用）</span>
+    </div>
+  </div>
+  <div class="facts"><div class="fact"><div class="label">登录方式</div><div class="value">GitHub</div></div><div class="fact"><div class="label">登录时间 (UTC+8)</div><div class="value">2026/11/6 16:43:56</div></div><div class="fact"><div class="label">用户 UUID</div><div class="value">b1a2c3d4-0000-4000-8000-000000000001</div></div><div class="fact"><div class="label">认证来源 IP</div><div class="value">203.0.113.10</div></div><div class="fact"><div class="label">认证国家</div><div class="value">CN</div></div><div class="fact"><div class="label">会话有效期至</div><div class="value">—</div></div></div>
+
+  <div class="section-title">三种登录方式</div>
+  <div class="methods"><div class="method active">
+      <div class="icon">GH</div>
+      <h3>GitHub</h3>
+      <p>OAuth App · 可读取组织与邮箱</p>
+      <div class="state">● 本次登录使用</div>
+    </div><div class="method ">
+      <div class="icon">G</div>
+      <h3>Google</h3>
+      <p>OAuth Client · 任意 Google 账号</p>
+      <div class="state">○ 已在 Access 登录页提供</div>
+    </div><div class="method ">
+      <div class="icon">@</div>
+      <h3>邮箱验证码</h3>
+      <p>One-time PIN · 零配置</p>
+      <div class="state">○ 已在 Access 登录页提供</div>
+    </div></div>
+  <p style="color:var(--muted);font-size:12px;margin:10px 0 0">
+    三种方式由 Zero Trust 的 Identity providers 提供，登录页由 Cloudflare 托管，Worker 不接触任何 client secret。
+    点击右上角「切换登录方式 / 退出」即可重新选择。
+  </p>
+
+  <div class="section-title">数据来源状态</div>
+  <div class="sources"><div class="source on">
+    <span class="dot"></span>
+    <div class="s-main">
+      <div class="s-name">ctx.access.getIdentity()</div>
+      <div class="s-reason">由 Cloudflare 边缘直接注入，无需解析 JWT</div>
+    </div>
+    <span class="chip ok">26 字段</span>
+  </div><div class="source ">
+    <span class="dot"></span>
+    <div class="s-main">
+      <div class="s-name">CF-Access-Jwt-Assertion (已验签)</div>
+      <div class="s-reason">请求中没有 CF-Access-Jwt-Assertion 头（本地 dev 模式属正常）</div>
+    </div>
+    <span class="chip off">未获取</span>
+  </div><div class="source on">
+    <span class="dot"></span>
+    <div class="s-main">
+      <div class="s-name">/cdn-cgi/access/get-identity</div>
+      <div class="s-reason">来自 /cdn-cgi/access/get-identity 的完整身份对象</div>
+    </div>
+    <span class="chip ok">30 字段</span>
+  </div><div class="source on">
+    <span class="dot"></span>
+    <div class="s-main">
+      <div class="s-name">请求上下文 (headers + request.cf)</div>
+      <div class="s-reason">由 Worker 直接读取，与 Access 无关</div>
+    </div>
+    <span class="chip ok">26 字段</span>
+  </div></div>
+
+  <div class="section-title">所有可获取的个人信息</div>
+  <section class="panel " id="panel-identity">
+    <div class="panel-head">
+      <div>
+        <h2>① 完整身份 · ctx.access.getIdentity()</h2>
+        <p>Cloudflare 边缘直接注入的身份对象；包含邮箱、姓名、IdP、分组、设备态势等。</p>
+      </div>
+      <span class="badge">官方推荐通道</span>
+    </div>
+    <div class="panel-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">id</span>
+        <span class="note">Access 内部身份 ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">b1a2c3d4-0000-4000-8000-000000000001</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">email</span>
+        <span class="note">由身份提供商验证过的邮箱地址</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">dev@example.com</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">name</span>
+        <span class="note">用户显示名（取决于 IdP 是否提供）</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">Local Dev User</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">user_uuid</span>
+        <span class="note">Zero Trust 组织内的用户 UUID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">b1a2c3d4-0000-4000-8000-000000000001</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">account_id</span>
+        <span class="note">Cloudflare / Zero Trust 组织账号 ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">00000000000000000000000000000000</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">idp</span>
+        <span class="note">本次登录所用的身份提供商信息</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">id</span>
+        <span class="note">Access 内部身份 ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">f47ac10b-58cc-4372-a567-0e02b2c3d4e5</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">type</span>
+        <span class="note">令牌类型：app=应用令牌，org=全局会话令牌</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">github</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">geo</span>
+        <span class="note">认证来源地理位置</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">country</span>
+        <span class="note">用户认证时所在国家（ISO 3166-1 二位码）</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">CN</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">custom</span>
+        <span class="note">IdP 透传的自定义 SAML 属性 / OIDC claims（可能含 groups）</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">groups</span>
+        <span class="note">IdP 分组（需在 IdP 中显式配置才会出现在令牌里）</span>
+        <span class="type">array(2)</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">[0]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">dev-team</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">[1]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">identity-console-admin</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">amr</span>
+        <span class="note">认证方式引用（pwd / mfa / fido / otp 等）</span>
+        <span class="type">array(2)</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">[0]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">pwd</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">[1]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">mfa</div></div>
+    </div></div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">amr</span>
+        <span class="note">认证方式引用（pwd / mfa / fido / otp 等）</span>
+        <span class="type">array(2)</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">[0]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">pwd</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">[1]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">mfa</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">devicePosture</span>
+        <span class="note">设备态势检查结果（磁盘加密、WARP、第三方 EDR 等）</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">c0ffee00-0000-4000-8000-000000000002</span>
+        
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">type</span>
+        <span class="note">令牌类型：app=应用令牌，org=全局会话令牌</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">gateway</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">rule_name</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">Disk encryption</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">success</span>
+        
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">true</div></div>
+    </div></div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">device_sessions</span>
+        <span class="note">该用户发起过的全部会话列表</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">11111111-2222-3333-4444-555555555555</span>
+        
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">last_authenticated</span>
+        
+        <span class="type">number</span>
+      </div>
+      <div class="field-body"><div class="scalar">1793954636  ·  2026/11/6 16:43:56 (UTC+8)</div></div>
+    </div></div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">iat</span>
+        <span class="note">令牌签发 / 登录时间（Unix 秒）</span>
+        <span class="type">number</span>
+      </div>
+      <div class="field-body"><div class="scalar">1793954636  ·  2026/11/6 16:43:56 (UTC+8)</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">ip</span>
+        <span class="note">用户认证时的公网 IP</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">203.0.113.10</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">auth_status</span>
+        <span class="note">mTLS 认证状态</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">NONE</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">common_name</span>
+        <span class="note">mTLS 客户端证书的 CN，或服务令牌的 Client ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar"></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">service_token_status</span>
+        <span class="note">是否通过服务令牌而非 IdP 认证</span>
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">false</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">is_warp</span>
+        <span class="note">是否启用 WARP 客户端</span>
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">false</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">is_gateway</span>
+        <span class="note">是否通过 Cloudflare One Client 接入组织</span>
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">false</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">version</span>
+        <span class="note">get-identity 响应结构版本</span>
+        <span class="type">number</span>
+      </div>
+      <div class="field-body"><div class="scalar">0</div></div>
+    </div></div></div>
+  </section><section class="panel dim" id="panel-jwt">
+    <div class="panel-head">
+      <div>
+        <h2>② Access JWT 声明 · CF-Access-Jwt-Assertion</h2>
+        <p>请求中没有 CF-Access-Jwt-Assertion 头（本地 dev 模式属正常）</p>
+      </div>
+      <span class="badge">未验签 / 未配置</span>
+    </div>
+    <div class="panel-body"><div class="empty">未取得 JWT 声明。原因：请求中没有 CF-Access-Jwt-Assertion 头（本地 dev 模式属正常）</div></div>
+  </section><section class="panel " id="panel-full">
+    <div class="panel-head">
+      <div>
+        <h2>③ 扩展身份 · /cdn-cgi/access/get-identity</h2>
+        <p>设备会话列表、mTLS 状态、WARP/Gateway 标记、完整 groups 等不受 cookie 大小限制的字段。</p>
+      </div>
+      <span class="badge">已获取</span>
+    </div>
+    <div class="panel-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">id</span>
+        <span class="note">Access 内部身份 ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">b1a2c3d4-0000-4000-8000-000000000001</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">email</span>
+        <span class="note">由身份提供商验证过的邮箱地址</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">dev@example.com</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">name</span>
+        <span class="note">用户显示名（取决于 IdP 是否提供）</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">Local Dev User</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">user_uuid</span>
+        <span class="note">Zero Trust 组织内的用户 UUID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">b1a2c3d4-0000-4000-8000-000000000001</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">account_id</span>
+        <span class="note">Cloudflare / Zero Trust 组织账号 ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">00000000000000000000000000000000</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">idp</span>
+        <span class="note">本次登录所用的身份提供商信息</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">id</span>
+        <span class="note">Access 内部身份 ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">f47ac10b-58cc-4372-a567-0e02b2c3d4e5</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">type</span>
+        <span class="note">令牌类型：app=应用令牌，org=全局会话令牌</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">github</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">geo</span>
+        <span class="note">认证来源地理位置</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">country</span>
+        <span class="note">用户认证时所在国家（ISO 3166-1 二位码）</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">CN</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">custom</span>
+        <span class="note">IdP 透传的自定义 SAML 属性 / OIDC claims（可能含 groups）</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">groups</span>
+        <span class="note">IdP 分组（需在 IdP 中显式配置才会出现在令牌里）</span>
+        <span class="type">array(2)</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">[0]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">dev-team</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">[1]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">identity-console-admin</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">email_verified</span>
+        
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">true</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">preferred_username</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">dev</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">amr</span>
+        <span class="note">认证方式引用（pwd / mfa / fido / otp 等）</span>
+        <span class="type">array(2)</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">[0]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">pwd</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">[1]</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">mfa</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">devicePosture</span>
+        <span class="note">设备态势检查结果（磁盘加密、WARP、第三方 EDR 等）</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">c0ffee00-0000-4000-8000-000000000002</span>
+        
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">type</span>
+        <span class="note">令牌类型：app=应用令牌，org=全局会话令牌</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">gateway</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">rule_name</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">Disk encryption</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">success</span>
+        
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">true</div></div>
+    </div></div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">device_sessions</span>
+        <span class="note">该用户发起过的全部会话列表</span>
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">11111111-2222-3333-4444-555555555555</span>
+        
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">last_authenticated</span>
+        
+        <span class="type">number</span>
+      </div>
+      <div class="field-body"><div class="scalar">1793954636  ·  2026/11/6 16:43:56 (UTC+8)</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">warp_as_idp</span>
+        
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><pre class="json-block">{
+  &quot;iat&quot;: 1793954636,
+  &quot;expires&quot;: 1793983436
+}</pre></div>
+    </div></div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">iat</span>
+        <span class="note">令牌签发 / 登录时间（Unix 秒）</span>
+        <span class="type">number</span>
+      </div>
+      <div class="field-body"><div class="scalar">1793954636  ·  2026/11/6 16:43:56 (UTC+8)</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">ip</span>
+        <span class="note">用户认证时的公网 IP</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">203.0.113.10</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">auth_status</span>
+        <span class="note">mTLS 认证状态</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">NONE</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">common_name</span>
+        <span class="note">mTLS 客户端证书的 CN，或服务令牌的 Client ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar"></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">service_token_status</span>
+        <span class="note">是否通过服务令牌而非 IdP 认证</span>
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">false</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">is_warp</span>
+        <span class="note">是否启用 WARP 客户端</span>
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">false</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">is_gateway</span>
+        <span class="note">是否通过 Cloudflare One Client 接入组织</span>
+        <span class="type">boolean</span>
+      </div>
+      <div class="field-body"><div class="scalar">false</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">version</span>
+        <span class="note">get-identity 响应结构版本</span>
+        <span class="type">number</span>
+      </div>
+      <div class="field-body"><div class="scalar">0</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">gateway_account_id</span>
+        <span class="note">Cloudflare One Client 生成的组织标识</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">demo-gateway-account</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">device_id</span>
+        <span class="note">认证设备 ID</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">11111111-2222-3333-4444-555555555555</div></div>
+    </div></div></div>
+  </section><section class="panel " id="panel-request">
+    <div class="panel-head">
+      <div>
+        <h2>④ 请求上下文 · headers + request.cf</h2>
+        <p>Cloudflare 边缘附加的地理、网络与 TLS 信息。会话 Cookie / JWT 原文一律脱敏，绝不回显到页面。</p>
+      </div>
+      <span class="badge">1 项已脱敏</span>
+    </div>
+    <div class="panel-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">request</span>
+        
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">url</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">https://auth.hesen.dpdns.org/</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">origin</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">https://auth.hesen.dpdns.org</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">pathname</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">/</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">method</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">GET</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">host</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">auth.hesen.dpdns.org</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">protocol</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">https:</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">headers</span>
+        
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">accept</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">text/html,application/xhtml+xml</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">accept-language</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">zh-CN,zh;q=0.9,en;q=0.8</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">cf-connecting-ip</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">203.0.113.10</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">cf-ipcountry</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">CN</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">cf-ray</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">8d1f2b3c4e5f6a7b-HKG</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">cookie</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">CF_Aut…[已脱敏，共 72 字符]</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">host</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">auth.hesen.dpdns.org</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">user-agent</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">x-forwarded-proto</span>
+        
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">https</div></div>
+    </div></div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">cf</span>
+        
+        <span class="type">object</span>
+      </div>
+      <div class="field-body"><div class="fields"><div class="field">
+      <div class="field-head">
+        <span class="key">colo</span>
+        <span class="note">处理请求的 Cloudflare 数据中心代码</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">HKG</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">country</span>
+        <span class="note">用户认证时所在国家（ISO 3166-1 二位码）</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">CN</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">city</span>
+        <span class="note">请求来源城市</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">Shenzhen</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">continent</span>
+        <span class="note">请求来源大洲</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">AS</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">latitude</span>
+        <span class="note">请求来源纬度</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">22.5431</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">longitude</span>
+        <span class="note">请求来源经度</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">114.0579</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">timezone</span>
+        <span class="note">请求来源时区</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">Asia/Shanghai</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">region</span>
+        <span class="note">请求来源地区 / 省</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">Guangdong</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">regionCode</span>
+        <span class="note">请求来源地区代码</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">GD</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">postalCode</span>
+        <span class="note">请求来源邮编</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">518000</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">asn</span>
+        <span class="note">请求来源自治系统号</span>
+        <span class="type">number</span>
+      </div>
+      <div class="field-body"><div class="scalar">4134</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">asOrganization</span>
+        <span class="note">请求来源网络运营商</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">CHINANET-BACKBONE</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">httpProtocol</span>
+        <span class="note">HTTP 协议版本</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">HTTP/3</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">tlsVersion</span>
+        <span class="note">TLS 版本</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">TLSv1.3</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">tlsCipher</span>
+        <span class="note">TLS 加密套件</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">AEAD-AES128-GCM-SHA256</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">clientAcceptEncoding</span>
+        <span class="note">客户端支持的压缩算法</span>
+        <span class="type">string</span>
+      </div>
+      <div class="field-body"><div class="scalar">gzip, br</div></div>
+    </div><div class="field">
+      <div class="field-head">
+        <span class="key">clientTcpRtt</span>
+        <span class="note">客户端 TCP 往返时延（毫秒）</span>
+        <span class="type">number</span>
+      </div>
+      <div class="field-body"><div class="scalar">24</div></div>
+    </div></div></div>
+    </div></div></div>
+  </section>
+
+  <div class="section-title">信息边界</div>
+  <div class="limits">
+    <h3>信息边界：哪些拿得到，哪些拿不到</h3>
+    <ul>
+      <li><strong>能拿到</strong>：Access 归一化后的身份（email、name、idp、groups、devicePosture、ip、geo、device_sessions…）、JWT 标准与自定义 claims、以及 <code>request.cf</code> 里的地理/ASN/TLS 数据。本页已把这些字段<strong>全量递归展开</strong>，不做白名单过滤。</li>
+      <li><strong>拿不到</strong>：GitHub 的 <code>login / avatar_url / bio / company</code>、Google 的 <code>picture / locale / hd</code> 等 IdP 原始 profile。Access 只向应用交付归一化身份，<strong>不透传 IdP 的 access token</strong>，Worker 无法代用户调用 GitHub/Google API。</li>
+      <li><strong>groups 有坑</strong>：写入 JWT 的 <code>custom</code> claims 超过约 1 KB 会被从尾部裁剪，groups 最容易丢；完整分组请走 <code>/cdn-cgi/access/get-identity</code>（本页通道 ③）。GitHub/Google 内置集成也不会自动带 groups，只有通用 OIDC/SAML IdP 支持显式配置 claims。</li>
+      <li><strong>想拿到原始 profile 的三条路</strong>：① 改用通用 OIDC 集成并配置自定义 claims / SCIM；② 应用内另行实现 GitHub/Google OAuth（自己保管 client secret 与 token，等于绕开 Access 的部分价值）；③ 让用户在前端自行授权后由浏览器直连 IdP API。MVP 阶段不建议，先把网关身份用好。</li>
+      <li><strong>安全约定</strong>：<code>cookie</code>、<code>authorization</code>、<code>cf-access-jwt-assertion</code> 等头已脱敏；JWT 验签失败会直接返回 403，不会把未验证的声明渲染出来。</li>
+    </ul>
+  </div>
+
+  <div class="section-title">原始快照 JSON</div>
+  <details id="raw-details">
+    <summary style="cursor:pointer;color:var(--blue);font-size:13px;margin-bottom:10px">展开完整 JSON（可直接复制给后端排查）</summary>
+    <pre class="raw" id="raw-json">{
+  &quot;meta&quot;: {
+    &quot;collectedAt&quot;: &quot;2026-11-06T09:30:49.699Z&quot;,
+    &quot;appName&quot;: &quot;Identity Console&quot;,
+    &quot;teamDomain&quot;: &quot;https://demo-team.cloudflareaccess.com&quot;,
+    &quot;audConfigured&quot;: false,
+    &quot;devMode&quot;: true,
+    &quot;authenticated&quot;: true,
+    &quot;forbidden&quot;: false
+  },
+  &quot;loginMethod&quot;: {
+    &quot;key&quot;: &quot;github&quot;,
+    &quot;label&quot;: &quot;GitHub&quot;,
+    &quot;raw&quot;: &quot;github&quot;
+  },
+  &quot;identity&quot;: {
+    &quot;id&quot;: &quot;b1a2c3d4-0000-4000-8000-000000000001&quot;,
+    &quot;email&quot;: &quot;dev@example.com&quot;,
+    &quot;name&quot;: &quot;Local Dev User&quot;,
+    &quot;user_uuid&quot;: &quot;b1a2c3d4-0000-4000-8000-000000000001&quot;,
+    &quot;account_id&quot;: &quot;00000000000000000000000000000000&quot;,
+    &quot;idp&quot;: {
+      &quot;id&quot;: &quot;f47ac10b-58cc-4372-a567-0e02b2c3d4e5&quot;,
+      &quot;type&quot;: &quot;github&quot;
+    },
+    &quot;geo&quot;: {
+      &quot;country&quot;: &quot;CN&quot;
+    },
+    &quot;custom&quot;: {
+      &quot;groups&quot;: [
+        &quot;dev-team&quot;,
+        &quot;identity-console-admin&quot;
+      ],
+      &quot;amr&quot;: [
+        &quot;pwd&quot;,
+        &quot;mfa&quot;
+      ]
+    },
+    &quot;amr&quot;: [
+      &quot;pwd&quot;,
+      &quot;mfa&quot;
+    ],
+    &quot;devicePosture&quot;: {
+      &quot;c0ffee00-0000-4000-8000-000000000002&quot;: {
+        &quot;type&quot;: &quot;gateway&quot;,
+        &quot;rule_name&quot;: &quot;Disk encryption&quot;,
+        &quot;success&quot;: true
+      }
+    },
+    &quot;device_sessions&quot;: {
+      &quot;11111111-2222-3333-4444-555555555555&quot;: {
+        &quot;last_authenticated&quot;: 1793954636
+      }
+    },
+    &quot;iat&quot;: 1793954636,
+    &quot;ip&quot;: &quot;203.0.113.10&quot;,
+    &quot;auth_status&quot;: &quot;NONE&quot;,
+    &quot;common_name&quot;: &quot;&quot;,
+    &quot;service_token_status&quot;: false,
+    &quot;is_warp&quot;: false,
+    &quot;is_gateway&quot;: false,
+    &quot;version&quot;: 0
+  },
+  &quot;ctxAud&quot;: &quot;local-dev-audience&quot;,
+  &quot;fullIdentity&quot;: {
+    &quot;id&quot;: &quot;b1a2c3d4-0000-4000-8000-000000000001&quot;,
+    &quot;email&quot;: &quot;dev@example.com&quot;,
+    &quot;name&quot;: &quot;Local Dev User&quot;,
+    &quot;user_uuid&quot;: &quot;b1a2c3d4-0000-4000-8000-000000000001&quot;,
+    &quot;account_id&quot;: &quot;00000000000000000000000000000000&quot;,
+    &quot;idp&quot;: {
+      &quot;id&quot;: &quot;f47ac10b-58cc-4372-a567-0e02b2c3d4e5&quot;,
+      &quot;type&quot;: &quot;github&quot;
+    },
+    &quot;geo&quot;: {
+      &quot;country&quot;: &quot;CN&quot;
+    },
+    &quot;custom&quot;: {
+      &quot;groups&quot;: [
+        &quot;dev-team&quot;,
+        &quot;identity-console-admin&quot;
+      ],
+      &quot;email_verified&quot;: true,
+      &quot;preferred_username&quot;: &quot;dev&quot;
+    },
+    &quot;amr&quot;: [
+      &quot;pwd&quot;,
+      &quot;mfa&quot;
+    ],
+    &quot;devicePosture&quot;: {
+      &quot;c0ffee00-0000-4000-8000-000000000002&quot;: {
+        &quot;type&quot;: &quot;gateway&quot;,
+        &quot;rule_name&quot;: &quot;Disk encryption&quot;,
+        &quot;success&quot;: true
+      }
+    },
+    &quot;device_sessions&quot;: {
+      &quot;11111111-2222-3333-4444-555555555555&quot;: {
+        &quot;last_authenticated&quot;: 1793954636,
+        &quot;warp_as_idp&quot;: {
+          &quot;iat&quot;: 1793954636,
+          &quot;expires&quot;: 1793983436
+        }
+      }
+    },
+    &quot;iat&quot;: 1793954636,
+    &quot;ip&quot;: &quot;203.0.113.10&quot;,
+    &quot;auth_status&quot;: &quot;NONE&quot;,
+    &quot;common_name&quot;: &quot;&quot;,
+    &quot;service_token_status&quot;: false,
+    &quot;is_warp&quot;: false,
+    &quot;is_gateway&quot;: false,
+    &quot;version&quot;: 0,
+    &quot;gateway_account_id&quot;: &quot;demo-gateway-account&quot;,
+    &quot;device_id&quot;: &quot;11111111-2222-3333-4444-555555555555&quot;
+  },
+  &quot;jwt&quot;: {
+    &quot;verified&quot;: false,
+    &quot;skipped&quot;: true,
+    &quot;reason&quot;: &quot;请求中没有 CF-Access-Jwt-Assertion 头（本地 dev 模式属正常）&quot;,
+    &quot;claims&quot;: null,
+    &quot;header&quot;: null
+  },
+  &quot;context&quot;: {
+    &quot;request&quot;: {
+      &quot;url&quot;: &quot;https://auth.hesen.dpdns.org/&quot;,
+      &quot;origin&quot;: &quot;https://auth.hesen.dpdns.org&quot;,
+      &quot;pathname&quot;: &quot;/&quot;,
+      &quot;method&quot;: &quot;GET&quot;,
+      &quot;host&quot;: &quot;auth.hesen.dpdns.org&quot;,
+      &quot;protocol&quot;: &quot;https:&quot;
+    },
+    &quot;headers&quot;: {
+      &quot;accept&quot;: &quot;text/html,application/xhtml+xml&quot;,
+      &quot;accept-language&quot;: &quot;zh-CN,zh;q=0.9,en;q=0.8&quot;,
+      &quot;cf-connecting-ip&quot;: &quot;203.0.113.10&quot;,
+      &quot;cf-ipcountry&quot;: &quot;CN&quot;,
+      &quot;cf-ray&quot;: &quot;8d1f2b3c4e5f6a7b-HKG&quot;,
+      &quot;cookie&quot;: &quot;CF_Aut…[已脱敏，共 72 字符]&quot;,
+      &quot;host&quot;: &quot;auth.hesen.dpdns.org&quot;,
+      &quot;user-agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36&quot;,
+      &quot;x-forwarded-proto&quot;: &quot;https&quot;
+    },
+    &quot;cf&quot;: {
+      &quot;colo&quot;: &quot;HKG&quot;,
+      &quot;country&quot;: &quot;CN&quot;,
+      &quot;city&quot;: &quot;Shenzhen&quot;,
+      &quot;continent&quot;: &quot;AS&quot;,
+      &quot;latitude&quot;: &quot;22.5431&quot;,
+      &quot;longitude&quot;: &quot;114.0579&quot;,
+      &quot;timezone&quot;: &quot;Asia/Shanghai&quot;,
+      &quot;region&quot;: &quot;Guangdong&quot;,
+      &quot;regionCode&quot;: &quot;GD&quot;,
+      &quot;postalCode&quot;: &quot;518000&quot;,
+      &quot;asn&quot;: 4134,
+      &quot;asOrganization&quot;: &quot;CHINANET-BACKBONE&quot;,
+      &quot;httpProtocol&quot;: &quot;HTTP/3&quot;,
+      &quot;tlsVersion&quot;: &quot;TLSv1.3&quot;,
+      &quot;tlsCipher&quot;: &quot;AEAD-AES128-GCM-SHA256&quot;,
+      &quot;clientAcceptEncoding&quot;: &quot;gzip, br&quot;,
+      &quot;clientTcpRtt&quot;: 24
+    },
+    &quot;redacted&quot;: [
+      &quot;cookie&quot;
+    ]
+  },
+  &quot;sources&quot;: [
+    {
+      &quot;id&quot;: &quot;ctx&quot;,
+      &quot;label&quot;: &quot;ctx.access.getIdentity()&quot;,
+      &quot;ok&quot;: true,
+      &quot;count&quot;: 26,
+      &quot;reason&quot;: &quot;由 Cloudflare 边缘直接注入，无需解析 JWT&quot;
+    },
+    {
+      &quot;id&quot;: &quot;jwt&quot;,
+      &quot;label&quot;: &quot;CF-Access-Jwt-Assertion (已验签)&quot;,
+      &quot;ok&quot;: false,
+      &quot;count&quot;: 0,
+      &quot;reason&quot;: &quot;请求中没有 CF-Access-Jwt-Assertion 头（本地 dev 模式属正常）&quot;
+    },
+    {
+      &quot;id&quot;: &quot;getIdentity&quot;,
+      &quot;label&quot;: &quot;/cdn-cgi/access/get-identity&quot;,
+      &quot;ok&quot;: true,
+      &quot;count&quot;: 30,
+      &quot;reason&quot;: &quot;来自 /cdn-cgi/access/get-identity 的完整身份对象&quot;
+    },
+    {
+      &quot;id&quot;: &quot;request&quot;,
+      &quot;label&quot;: &quot;请求上下文 (headers + request.cf)&quot;,
+      &quot;ok&quot;: true,
+      &quot;count&quot;: 26,
+      &quot;reason&quot;: &quot;由 Worker 直接读取，与 Access 无关&quot;
+    }
+  ]
+}</pre>
+  </details>
+  <div class="toolbar">
+    <button class="btn primary" id="copy-json" type="button">复制 JSON</button>
+    <button class="btn" id="download-json" type="button">下载 .json</button>
+    <button class="btn" id="expand-all" type="button" data-open="0">展开全部</button>
+    <a class="btn" href="/api/snapshot" target="_blank" rel="noopener">API: /api/snapshot</a>
+    <a class="btn" href="/api/identity" target="_blank" rel="noopener">API: /api/identity</a>
+  </div>
+
+  <footer>
+    <span>Cloudflare Workers + Zero Trust Access · GitHub / Google / One-time PIN</span>
+    <span>快照生成于 2026-11-06T09:30:49.699Z</span>
+  </footer>
+</div>
+<script>(function(){
+  var raw = document.getElementById('raw-json');
+  var payload = raw ? raw.textContent : '{}';
+  function copyText(text, btn){
+    var done = function(){ var old = btn.textContent; btn.textContent = '已复制'; setTimeout(function(){ btn.textContent = old; }, 1600); };
+    if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(text).then(done, function(){ fallback(text, done); }); }
+    else { fallback(text, done); }
+  }
+  function fallback(text, done){
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch(e) {} document.body.removeChild(ta);
+  }
+  var copyBtn = document.getElementById('copy-json');
+  if (copyBtn) copyBtn.addEventListener('click', function(){ copyText(payload, copyBtn); });
+  var dlBtn = document.getElementById('download-json');
+  if (dlBtn) dlBtn.addEventListener('click', function(){
+    var blob = new Blob([payload], {type:'application/json'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'access-identity-snapshot.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  });
+  var expandBtn = document.getElementById('expand-all');
+  if (expandBtn) expandBtn.addEventListener('click', function(){
+    var ds = document.querySelectorAll('details');
+    var open = expandBtn.getAttribute('data-open') !== '1';
+    for (var i=0;i<ds.length;i++) ds[i].open = open;
+    expandBtn.setAttribute('data-open', open ? '1' : '0');
+    expandBtn.textContent = open ? '收起全部' : '展开全部';
+  });
+})();</script>
+</body>
+</html>

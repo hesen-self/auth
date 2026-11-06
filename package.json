@@ -1,0 +1,26 @@
+{
+  "name": "cf-access-identity-console",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker protected by Zero Trust Access with GitHub, Google and One-time PIN login; displays every obtainable identity field.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "preview": "node scripts/render-preview.mjs",
+    "setup": "node scripts/setup-access.mjs",
+    "setup:dry": "node scripts/setup-access.mjs --dry-run",
+    "doctor": "node scripts/doctor.mjs",
+    "urls": "node scripts/show-callbacks.mjs",
+    "check": "node --check src/index.js && node --check src/identity.js && node --check src/render.js && node --check scripts/lib/cf.mjs && node --check scripts/setup-access.mjs && node --check scripts/doctor.mjs && node --check scripts/show-callbacks.mjs && node --check scripts/render-preview.mjs"
+  },
+  "dependencies": {
+    "jose": "^6.1.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.158.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

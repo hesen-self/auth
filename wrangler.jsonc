@@ -1,0 +1,72 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "auth-identity-console",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-06",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // 访问域名。custom_domain: true 会在部署时自动创建 DNS 记录（要求该 zone 已由此账号托管）。
+  "routes": [
+    { "pattern": "auth.hesen.dpdns.org", "custom_domain": true }
+  ],
+  // 关闭 workers.dev 访问：Access 应用是按 auth.hesen.dpdns.org 这个 hostname 建的，
+  // 若留着 workers.dev 就能绕过登录页。需要预览时请改用 Worker 级 Access 保护。
+  "workers_dev": false,
+  "observability": {
+    "enabled": true
+  },
+
+  // TEAM_DOMAIN 已确定（Zero Trust team name: seazen）。
+  // POLICY_AUD 必须先创建 Access 应用才有；跑 npm run setup -- --write-config 会自动回填。
+  // 两者都不是机密，放 vars 即可；若想更严格可用 wrangler secret put。
+  "vars": {
+    "TEAM_DOMAIN": "https://seazen.cloudflareaccess.com",
+    "POLICY_AUD": "",
+    "APP_NAME": "Identity Console"
+  },
+
+  // 仅 wrangler dev 生效：模拟一个已通过 Access 认证的身份，无需真实登录即可开发/预览。
+  // 生产部署时该块被忽略，真实身份由 Cloudflare Access 在边缘注入（ctx.access / JWT）。
+  "access": {
+    "dev": {
+      "aud": "local-dev-audience",
+      "identity": {
+        "id": "b1a2c3d4-0000-4000-8000-000000000001",
+        "email": "dev@example.com",
+        "name": "Local Dev User",
+        "user_uuid": "b1a2c3d4-0000-4000-8000-000000000001",
+        "account_id": "00000000000000000000000000000000",
+        "idp": {
+          "id": "f47ac10b-58cc-4372-a567-0e02b2c3d4e5",
+          "type": "github"
+        },
+        "geo": { "country": "CN" },
+        "custom": {
+          "groups": ["dev-team", "identity-console-admin"],
+          "amr": ["pwd", "mfa"]
+        },
+        "amr": ["pwd", "mfa"],
+        "devicePosture": {
+          "c0ffee00-0000-4000-8000-000000000002": {
+            "type": "gateway",
+            "rule_name": "Disk encryption",
+            "success": true
+          }
+        },
+        "device_sessions": {
+          "11111111-2222-3333-4444-555555555555": {
+            "last_authenticated": 1793954636
+          }
+        },
+        "iat": 1793954636,
+        "ip": "203.0.113.10",
+        "auth_status": "NONE",
+        "common_name": "",
+        "service_token_status": false,
+        "is_warp": false,
+        "is_gateway": false,
+        "version": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "collectedAt": "2026-11-06T09:30:50.801Z",
+    "appName": "Identity Console",
+    "teamDomain": "https://demo-team.cloudflareaccess.com",
+    "audConfigured": false,
+    "devMode": true,
+    "authenticated": true,
+    "forbidden": false
+  },
+  "loginMethod": {
+    "key": "github",
+    "label": "GitHub",
+    "raw": "github"
+  },
+  "identity": {
+    "id": "b1a2c3d4-0000-4000-8000-000000000001",
+    "email": "dev@example.com",
+    "name": "Local Dev User",
+    "user_uuid": "b1a2c3d4-0000-4000-8000-000000000001",
+    "account_id": "00000000000000000000000000000000",
+    "idp": {
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d4e5",
+      "type": "github"
+    },
+    "geo": {
+      "country": "CN"
+    },
+    "custom": {
+      "groups": [
+        "dev-team",
+        "identity-console-admin"
+      ],
+      "amr": [
+        "pwd",
+        "mfa"
+      ]
+    },
+    "amr": [
+      "pwd",
+      "mfa"
+    ],
+    "devicePosture": {
+      "c0ffee00-0000-4000-8000-000000000002": {
+        "type": "gateway",
+        "rule_name": "Disk encryption",
+        "success": true
+      }
+    },
+    "device_sessions": {
+      "11111111-2222-3333-4444-555555555555": {
+        "last_authenticated": 1793954636
+      }
+    },
+    "iat": 1793954636,
+    "ip": "203.0.113.10",
+    "auth_status": "NONE",
+    "common_name": "",
+    "service_token_status": false,
+    "is_warp": false,
+    "is_gateway": false,
+    "version": 0
+  },
+  "ctxAud": "local-dev-audience",
+  "fullIdentity": null,
+  "jwt": {
+    "verified": false,
+    "skipped": true,
+    "reason": "请求中没有 CF-Access-Jwt-Assertion 头（本地 dev 模式属正常）",
+    "claims": null,
+    "header": null
+  },
+  "context": {
+    "request": {
+      "url": "https://auth.hesen.dpdns.org/api/snapshot",
+      "origin": "https://auth.hesen.dpdns.org",
+      "pathname": "/api/snapshot",
+      "method": "GET",
+      "host": "auth.hesen.dpdns.org",
+      "protocol": "https:"
+    },
+    "headers": {
+      "accept": "text/html,application/xhtml+xml",
+      "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+      "cf-connecting-ip": "203.0.113.10",
+      "cf-ipcountry": "CN",
+      "cf-ray": "8d1f2b3c4e5f6a7b-HKG",
+      "cookie": "CF_Aut…[已脱敏，共 72 字符]",
+      "host": "auth.hesen.dpdns.org",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36",
+      "x-forwarded-proto": "https"
+    },
+    "cf": {},
+    "redacted": [
+      "cookie"
+    ]
+  },
+  "sources": [
+    {
+      "id": "ctx",
+      "label": "ctx.access.getIdentity()",
+      "ok": true,
+      "count": 26,
+      "reason": "由 Cloudflare 边缘直接注入，无需解析 JWT"
+    },
+    {
+      "id": "jwt",
+      "label": "CF-Access-Jwt-Assertion (已验签)",
+      "ok": false,
+      "count": 0,
+      "reason": "请求中没有 CF-Access-Jwt-Assertion 头（本地 dev 模式属正常）"
+    },
+    {
+      "id": "getIdentity",
+      "label": "/cdn-cgi/access/get-identity",
+      "ok": false,
+      "count": 0,
+      "reason": "get-identity 返回 HTTP 400"
+    },
+    {
+      "id": "request",
+      "label": "请求上下文 (headers + request.cf)",
+      "ok": true,
+      "count": 9,
+      "reason": "由 Worker 直接读取，与 Access 无关"
+    }
+  ]
+}
