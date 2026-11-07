@@ -21,9 +21,29 @@
   // 两者都不是机密，放 vars 即可；若想更严格可用 wrangler secret put。
   "vars": {
     "TEAM_DOMAIN": "https://seazen.cloudflareaccess.com",
-    "POLICY_AUD": "",
+    "POLICY_AUD": "ef14c99e1aca29853863e96825e7313066f12447520ae76aaa9a4bf0d421a5da",
     "APP_NAME": "Identity Console"
   },
+
+  // Worker 运行时不需要任何 secret；限制 .dev.vars 只作为脚本凭证使用，
+  // 避免 wrangler dev 把 CF_API_TOKEN / OAuth secret 注入 Worker 的 env。
+  "secrets": {
+    "required": []
+  },
+
+  // R2 头像存储 + D1 登录日志。wrangler dev 默认使用本地模拟资源，
+  // 首次本地开发需先执行 npm run db:init:local 建表。
+  "r2_buckets": [
+    { "binding": "AVATARS", "bucket_name": "auth-identity-avatars" }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "auth-identity-db",
+      "database_id": "c801bb7b-f505-408a-8ddc-d81e2f73b4c0",
+      "migrations_dir": "migrations"
+    }
+  ],
 
   // 仅 wrangler dev 生效：模拟一个已通过 Access 认证的身份，无需真实登录即可开发/预览。
   // 生产部署时该块被忽略，真实身份由 Cloudflare Access 在边缘注入（ctx.access / JWT）。

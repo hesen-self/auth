@@ -234,3 +234,103 @@ Access 交付的是**归一化身份**，不透传 IdP 的 access token，所以
 - 缩短 `session_duration`，敏感场景在策略里要求 MFA（`Login methods` + `Authentication Method Reference` 选择器）。
 - 若 Worker 还挂了其他域名，为每个 hostname 建 Access 应用或启用 Worker 级保护。
 - 定期轮换 Access 签名密钥时无需改代码：JWKS 每次从 `/cdn-cgi/access/certs` 动态获取并按 `kid` 匹配。
+
+## 13. R2 头像 + D1 登录日志
+
+### 为什么头像是「应用内上传」而不是 IdP 头像
+
+Access 不透传 IdP 的 access token（见 §10），Worker 拿不到 GitHub `avatar_url` / Google `picture`。
+因此本项目用 R2 保存**用户自行上传**的头像，key 为 `avatars/<user_uuid>`，由 Worker 代理读写，
+不暴露 R2 公开域名；未上传时页面降级显示姓名首字母。若要自动同步 IdP 头像，须改用通用 OIDC
+自定义 claims，或在应用内另做 OAuth。
+
+### 云端资源
+
+| 资源 | 名称 | ID |
+| --- | --- | --- |
+| R2 bucket | `auth-identity-avatars` | — |
+| D1 database | `auth-identity-db` | `c801bb7b-f505-408a-8ddc-d81e2f73b4c0` |
+
+两者已写入 `wrangler.jsonc` 的 `r2_buckets` / `d1_databases`。全新环境按此顺序执行：
+
+```bash
+npm run r2:create      # bucket 不存在时
+npm run d1:create      # 数据库不存在时（创建后把返回的 uuid 回填 database_id）
+npm run db:init        # 远端建表
+npm run db:init:local  # 本地 wrangler dev 建表
+npm run deploy
+```
+
+### 表结构与去重
+
+`migrations/0001_init.sql` 建 `login_logs` 表与两个索引。`(user_uuid, auth_at)` 唯一，
+`auth_at` 取 Access JWT 的 `iat`（登录签发时间，整个会话稳定），配合 `INSERT OR IGNORE`
+保证一次登录只写一条，刷新页面不会重复记账。
+
+`identity_json` 保存完整身份对象，落库前递归脱敏：`cookie` / `authorization` /
+`cf-access-jwt-assertion` / `client_secret` / `access_token` 等键一律替换为 `[已脱敏]`，
+JWT 原文和会话 Cookie 不入库。
+
+### 可见范围
+
+`groups` 含 `identity-console-admin`（或 `admin`）的用户为管理员，可查看全部记录；
+普通用户只能查看 `user_uuid` 等于自身的记录。列表支持 `page`、`pageSize`（最大 50）
+与 `q`（邮箱 / 姓名 / IP / 登录方式模糊匹配）。
+
+### 新增接口
+
+| 路径 | 方法 | 说明 |
+| --- | --- | --- |
+| `/api/avatar` | GET | 读取当前用户头像；未上传返回 404 |
+| `/api/avatar` | POST | 上传当前用户头像；限 PNG / JPEG / WebP / GIF、≤ 2 MB，校验同源 |
+| `/api/logs` | GET | 分页日志 JSON（含 `storage` 绑定状态） |
+| `/api/logs/:id` | GET | 单条日志 JSON |
+| `/logs` | GET | 登录记录列表页（搜索 + 分页 + 详情入口） |
+| `/logs/:id` | GET | 登录详情页（概要字段、分组、脱敏身份对象、原始 JSON） |
+| `/health` | GET | 探活，附 `storage.r2` / `storage.d1` |
+
+### 本地开发注意
+
+`wrangler.jsonc` 已用 `secrets.required: []` 做白名单隔离：`.dev.vars` 里的 `CF_API_TOKEN` 等脚本凭证不会被注入 Worker `env`。
+`wrangler dev` 默认使用本地模拟的 R2 / D1（`.wrangler/state`），所以要先跑 `npm run db:init:local`。
+
+---
+
+## 14. 登录 / 退出按钮与登出链路
+
+页面顶栏在 `/`、`/logs`、`/logs/:id` 都显示当前登录邮箱与 **退出登录** 按钮；未认证时 403 页提供 **前往 Access 登录页** 按钮。登录态完全由 Access 会话决定，Worker 不自行维护。
+
+### 为什么需要中间页
+
+Cloudflare Access 的两个官方登出端点：
+
+- `https://auth.hesen.dpdns.org/cdn-cgi/access/logout` —— 清应用授权 Cookie
+- `https://seazen.cloudflareaccess.com/cdn-cgi/access/logout` —— 清全局 SSO Cookie
+
+都只负责**撤销会话 + 清除 Cookie**，不负责跳转：无 Cookie 时访问只返回 `No Access cookie found. Please login first.` 错误页。而登录页 URL 形如
+`https://seazen.cloudflareaccess.com/cdn-cgi/access/login/auth.hesen.dpdns.org?kid=<AUD>&meta=<动态签名>&redirect_url=%2F`，
+其中 `meta` 由边缘按请求实时生成（含 iat / exp / app_session_hash），**无法在代码里硬编码**。
+
+因此 `/logout` 中间页按三步完成「退出后最终到登录页」：
+
+1. 同源 `fetch` + 隐藏 `iframe` 触发上述两个官方端点（X-Frame-Options / CORS 不影响 Set-Cookie 与服务端 revoke）。
+2. 等待 1–3 秒后 `location.replace('/')`。整个 hostname 受 Access 保护，Cookie 已清 → 边缘 302 到带有效 `meta` 的登录页。
+3. 用户在 Cloudflare 托管的登录页重新选择 GitHub / Google / 邮箱验证码，完成登录。
+
+页面另外提供「立即重新登录」（跳 `/`）与「直接打开 Access 登录页」（用 `TEAM_DOMAIN` + `kid` 构造，边缘会补发 `meta`）两个兜底入口。
+
+### 实测依据（2026-11-07）
+
+| 请求 | 结果 |
+| --- | --- |
+| `GET https://auth.hesen.dpdns.org/`（无 Cookie） | 302 → `seazen.cloudflareaccess.com/cdn-cgi/access/login/auth.hesen.dpdns.org?kid=…&meta=…&redirect_url=%2F`，登录页 200 |
+| `GET /cdn-cgi/access/logout`（无 Cookie） | 200 `Error ・ Cloudflare Access` / `No Access cookie found. Please login first.` |
+| `HEAD /cdn-cgi/access/logout` | 404（该端点只处理 GET） |
+| 直接访问登录页 URL（不带 meta） | 302 回 `/`，再由边缘补发带 meta 的登录页 |
+
+### 限制
+
+- 官方登出是**全局撤销**（不能只退出单个应用），旧 token 约 20–30 秒后停止被接受，所以中间页会稍作等待再跳回。
+- 若 Google / GitHub 等 IdP 仍保持登录，可能触发 SSO 自动重新登录；要彻底换账号需先在 IdP 侧登出。
+- `wrangler dev` 的 `access.dev` 注入模拟身份，浏览器里没有真实 Access 会话：本地 `/logout` 不触发登出请求，只显示降级说明与「返回首页（重新登录）」按钮。
+- `/logout` 不计入 D1 登录日志（它不是一次登录）。

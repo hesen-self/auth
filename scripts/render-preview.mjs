@@ -12,6 +12,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import worker from '../src/index.js';
+import { renderLogoutPage } from '../src/render.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -121,7 +122,90 @@ const snapshotResponse = await worker.fetch(
   env,
   ctx,
 );
-writeFileSync(resolve(ROOT, 'public/snapshot.example.json'), await snapshotResponse.text(), 'utf8');
+const snapshotText = await snapshotResponse.text();
+writeFileSync(resolve(ROOT, 'public/snapshot.example.json'), snapshotText, 'utf8');
+
+// 登录记录列表页：先验证无绑定时优雅降级，再用内存 mock 生成带示例数据的预览。
+const logsUrl = 'https://auth.hesen.dpdns.org/logs';
+const degraded = await worker.fetch(new Request(logsUrl, { method: 'GET', headers }), env, ctx);
+const degradedHtml = await degraded.text();
+
+const sampleRows = [0, 1, 2].map((index) => ({
+  id: `sample-log-${index + 1}`,
+  user_uuid: devIdentity.user_uuid,
+  email: devIdentity.email,
+  name: devIdentity.name,
+  login_method: ['GitHub', 'Google', '邮箱验证码'][index],
+  login_method_key: ['github', 'google', 'pin'][index],
+  idp_type: ['github', 'google', 'onetimepin'][index],
+  country: 'CN',
+  city: ['Shenzhen', 'Shanghai', 'Beijing'][index],
+  ip: `203.0.113.${10 + index}`,
+  colo: 'HKG',
+  asn: '4134',
+  as_org: 'CHINANET-BACKBONE',
+  user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0',
+  auth_at: devIdentity.iat - index * 3600,
+  session_exp: devIdentity.iat + 28800,
+  aud: config.access.dev.aud,
+  groups_json: JSON.stringify(['dev-team', 'identity-console-admin']),
+  identity_json: JSON.stringify(devIdentity),
+  dev_mode: 1,
+  created_at: new Date(Date.now() - index * 3600000).toISOString(),
+}));
+
+// 只实现 storage.js 用到的 D1 / R2 方法，纯内存、不联网。
+function createMockDb(rows) {
+  return {
+    prepare(sql) {
+      let args = [];
+      const statement = {
+        bind(...values) { args = values; return statement; },
+        async all() { return { results: rows }; },
+        async first() {
+          if (sql.includes('COUNT(*)')) return { total: rows.length };
+          if (sql.includes('WHERE id = ?')) return rows.find((row) => row.id === args[0]) || null;
+          return rows[0] || null;
+        },
+        async run() { return { changes: 0 }; },
+      };
+      return statement;
+    },
+  };
+}
+
+const createMockR2 = () => ({ async get() { return null; }, async put() { return {}; } });
+const previewEnv = { ...env, DB: createMockDb(sampleRows), AVATARS: createMockR2() };
+
+const logsResponse = await worker.fetch(new Request(logsUrl, { method: 'GET', headers }), previewEnv, ctx);
+const logsHtml = await logsResponse.text();
+writeFileSync(resolve(ROOT, 'public/logs-preview.html'), logsHtml, 'utf8');
+
+const detailResponse = await worker.fetch(
+  new Request(`${logsUrl}/sample-log-1`, { method: 'GET', headers }), previewEnv, ctx,
+);
+const detailHtml = await detailResponse.text();
+writeFileSync(resolve(ROOT, 'public/log-detail-preview.html'), detailHtml, 'utf8');
+
+// 退出中间页：先验证 Worker 路由（dev 态），再生成一份「生产态」预览便于查看真实效果。
+const logoutResponse = await worker.fetch(
+  new Request('https://auth.hesen.dpdns.org/logout', { method: 'GET', headers }), env, ctx,
+);
+const logoutHtml = await logoutResponse.text();
+const prodLogoutSnapshot = structuredClone(JSON.parse(snapshotText));
+prodLogoutSnapshot.meta.devMode = false;
+prodLogoutSnapshot.meta.teamDomain = 'https://seazen.cloudflareaccess.com';
+prodLogoutSnapshot.jwt.claims = { ...(prodLogoutSnapshot.jwt.claims || {}), aud: config.vars.POLICY_AUD };
+const prodLogoutHtml = renderLogoutPage(prodLogoutSnapshot);
+writeFileSync(resolve(ROOT, 'public/logout-preview.html'), prodLogoutHtml, 'utf8');
+
+// 未认证访问（403）也应提供「前往登录页」入口，形成登录 / 退出的状态切换。
+const forbiddenResponse = await worker.fetch(
+  new Request('https://auth.hesen.dpdns.org/', { method: 'GET', headers: new Headers({ host: 'auth.hesen.dpdns.org' }) }),
+  env,
+  {},
+);
+const forbiddenHtml = await forbiddenResponse.text();
 
 // 冒烟断言
 const checks = [
@@ -130,6 +214,20 @@ const checks = [
   ['页面包含四个数据面板', (html.match(/class="panel /g) || []).length === 4],
   ['会话令牌已脱敏', !html.includes('dev-session-token-must-never-appear-in-html')],
   ['敏感头标记为脱敏', html.includes('[已脱敏')],
+  ['页面包含 R2 头像与上传入口', html.includes('avatar-img') && html.includes('avatar-upload')],
+  ['页面包含登录记录导航', html.includes('href="/logs"')],
+  ['日志列表页可渲染', logsResponse.status === 200 && logsHtml.includes('登录记录')],
+  ['无 D1 绑定时列表页给出降级提示', degraded.status === 200 && degradedHtml.includes('存储尚未配置')],
+  ['列表页含示例记录表格', logsHtml.includes('<tbody>') && logsHtml.includes('sample-log-1')],
+  ['详情页含脱敏身份对象', detailResponse.status === 200 && detailHtml.includes('落库的身份对象')],
+  ['顶栏包含退出登录按钮', html.includes('href="/logout"') && html.includes('退出登录')],
+  ['列表页 / 详情页也包含退出按钮', logsHtml.includes('href="/logout"') && detailHtml.includes('href="/logout"')],
+  ['退出页可渲染', logoutResponse.status === 200 && logoutHtml.includes('正在退出登录')],
+  ['本地 dev 退出页给出降级说明', logoutHtml.includes('本地 dev 模式') && logoutHtml.includes('返回首页（重新登录）')],
+  ['生产态退出页触发官方登出端点', prodLogoutHtml.includes('/cdn-cgi/access/logout') && prodLogoutHtml.includes('立即重新登录')],
+  ['生产态退出页同时触发 team 域名全局登出', prodLogoutHtml.includes('seazen.cloudflareaccess.com/cdn-cgi/access/logout')],
+  ['生产态退出页跳回应用首页由 Access 302 到登录页', prodLogoutHtml.includes("location.replace('/')")],
+  ['未登录 403 页提供前往登录页入口', forbiddenResponse.status === 403 && forbiddenHtml.includes('前往 Access 登录页')],
 ];
 console.log('\n预览生成：public/preview.html');
 console.log(`页面大小：${(Buffer.byteLength(html) / 1024).toFixed(1)} KB\n`);

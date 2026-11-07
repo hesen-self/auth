@@ -12,7 +12,11 @@
     "setup:dry": "node scripts/setup-access.mjs --dry-run",
     "doctor": "node scripts/doctor.mjs",
     "urls": "node scripts/show-callbacks.mjs",
-    "check": "node --check src/index.js && node --check src/identity.js && node --check src/render.js && node --check scripts/lib/cf.mjs && node --check scripts/setup-access.mjs && node --check scripts/doctor.mjs && node --check scripts/show-callbacks.mjs && node --check scripts/render-preview.mjs"
+    "r2:create": "wrangler r2 bucket create auth-identity-avatars",
+    "d1:create": "wrangler d1 create auth-identity-db",
+    "db:init": "wrangler d1 execute auth-identity-db --remote --file=migrations/0001_init.sql",
+    "db:init:local": "wrangler d1 execute auth-identity-db --local --file=migrations/0001_init.sql",
+    "check": "node --check src/index.js && node --check src/identity.js && node --check src/render.js && node --check src/storage.js && node --check scripts/lib/cf.mjs && node --check scripts/setup-access.mjs && node --check scripts/doctor.mjs && node --check scripts/show-callbacks.mjs && node --check scripts/render-preview.mjs"
   },
   "dependencies": {
     "jose": "^6.1.0"

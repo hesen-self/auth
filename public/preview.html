@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Identity Console · 身份信息</title>
+<title>身份信息 · Identity Console</title>
 <style>
 :root{color-scheme:dark;--bg:#0b0e14;--surface:#121821;--surface-2:#171f2b;--line:#252e3c;--text:#e6edf3;--muted:#8b98a9;--accent:#f6821f;--blue:#5b9dff;--green:#3fb950;--purple:#b47cff;--red:#f85149}
 *{box-sizing:border-box}
@@ -86,20 +86,82 @@ pre.raw{background:#0c1118;border:1px solid var(--line);border-radius:10px;paddi
 .limits li{margin:6px 0}
 .limits code{font-family:ui-monospace,monospace;color:var(--blue);font-size:12px}
 footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:#657184;font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
-@media(max-width:780px){.methods{grid-template-columns:1fr}.hero{padding-top:26px}.wrap{padding:0 16px 60px}.topbar-in{padding:12px 16px}}
+.avatar{position:relative;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:21px;display:block}
+.avatar-fallback{width:100%;height:100%;display:grid;place-items:center;font-size:31px;font-weight:700;color:#d7e3ff}
+.nav{display:flex;gap:4px;align-items:center}
+.nav a{font-size:12px;padding:6px 11px;border-radius:8px;border:1px solid transparent;color:var(--muted)}
+.nav a:hover{text-decoration:none;color:var(--text);background:var(--surface-2)}
+.nav a.on{color:var(--accent);border-color:#5a3a17;background:#2a1c0d}
+.upload{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.upload input[type=file]{font-size:12px;color:var(--muted);max-width:220px}
+.upload-note{font-size:11.5px;color:var(--muted)}
+.logs-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin:30px 0 16px}
+.logs-head h1{margin:0;font-size:23px}
+.logs-head p{margin:5px 0 0;color:var(--muted);font-size:12.5px}
+.search{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.search input{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;color:var(--text);font-size:12.5px;font-family:inherit;min-width:230px}
+.search input:focus{outline:none;border-color:var(--accent)}
+.table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);background:var(--surface-2);font-weight:600}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#161e29}
+.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+.pager{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:16px;font-size:12.5px;color:var(--muted)}
+.pager .pages{display:flex;gap:6px;align-items:center}
+.pager a,.pager span.cur{padding:6px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font-size:12px}
+.pager span.cur{border-color:var(--accent);color:var(--accent)}
+.pager a:hover{text-decoration:none;border-color:var(--accent)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:16px 0}
+.kv .item{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.kv .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.kv .v{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12.5px;margin-top:5px;word-break:break-all}
+.back{display:inline-block;margin:26px 0 0;font-size:12.5px}
+.userbox{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.user-email{font-size:12px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn.logout{border-color:#5a2b2b;color:#ff9d97;background:#2a1719}
+.btn.logout:hover{border-color:var(--red);color:#fff;background:#3a1c1f}
+.btn.login{background:var(--accent);border-color:var(--accent);color:#1a1206;font-weight:650}
+.btn.login:hover{filter:brightness(1.1);color:#1a1206}
+.logout-stage{max-width:660px;padding:64px 20px 80px}
+.logout-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:30px 32px}
+.logout-card h1{margin:14px 0 6px;font-size:22px}
+.logout-card p{color:var(--muted);font-size:13px;margin:6px 0 0}
+.logout-state{display:flex;align-items:center;gap:12px;margin:22px 0 4px;padding:14px 16px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;font-size:13px}
+.spinner{width:17px;height:17px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logout-steps{margin:18px 0 0;padding-left:20px;color:var(--muted);font-size:12.5px;line-height:1.7}
+.logout-steps li{margin:6px 0}
+.logout-steps code,.logout-card code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--blue);font-size:12px}
+.logout-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:24px}
+@media(max-width:780px){.methods{grid-template-columns:1fr}.hero{padding-top:26px}.wrap{padding:0 16px 60px}.topbar-in{padding:12px 16px}.nav a{padding:6px 8px}.user-email{display:none}.logout-card{padding:22px}.logout-stage{padding:40px 16px 60px}}
 </style>
 </head>
 <body>
 <div class="topbar"><div class="topbar-in">
   <div class="brand"><span class="brand-mark">CF</span><span>Identity Console</span></div>
+  <nav class="nav">
+    <a href="/" class="on">身份信息</a>
+    <a href="/logs" class="">登录记录</a>
+  </nav>
   <span class="spacer"></span>
-  <span class="pill dev">本地 dev 身份</span>
-  <span class="pill">2026/11/6 17:30:49 UTC+8</span>
+  <div class="userbox">
+    <span class="pill dev">本地 dev 身份</span>
+    <span class="user-email" title="dev@example.com">dev@example.com</span>
+    <span class="pill">2026/11/7 23:26:02 UTC+8</span>
+    <a class="btn logout" href="/logout" title="结束当前 Access 会话并回到登录页">退出登录</a>
+  </div>
 </div></div>
 
 <div class="wrap">
+  
   <div class="hero">
-    <div class="avatar">LD</div>
+    <div class="avatar">
+      <div class="avatar-fallback" id="avatar-fallback">LD</div>
+      <img id="avatar-img" src="/api/avatar" alt="用户头像" referrerpolicy="no-referrer" style="display:none">
+    </div>
     <div class="hero-main">
       <h1>Local Dev User</h1>
       <div class="email">dev@example.com</div>
@@ -109,9 +171,11 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:#
         <span class="tag">本地 dev 身份</span>
         <span class="tag">JWT 验签待配置</span>
       </div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <span class="btn" title="本地预览环境不提供真实登出">切换登录方式（部署后可用）</span>
+      <div class="upload">
+        <input type="file" id="avatar-file" accept="image/png,image/jpeg,image/webp,image/gif">
+        <button class="btn" id="avatar-upload" type="button">上传头像</button>
+        <span class="upload-note" id="avatar-msg">头像存于 R2 · PNG / JPEG / WebP / GIF · ≤ 2MB</span>
+      </div>
     </div>
   </div>
   <div class="facts"><div class="fact"><div class="label">登录方式</div><div class="value">GitHub</div></div><div class="fact"><div class="label">登录时间 (UTC+8)</div><div class="value">2026/11/6 16:43:56</div></div><div class="fact"><div class="label">用户 UUID</div><div class="value">b1a2c3d4-0000-4000-8000-000000000001</div></div><div class="fact"><div class="label">认证来源 IP</div><div class="value">203.0.113.10</div></div><div class="fact"><div class="label">认证国家</div><div class="value">CN</div></div><div class="fact"><div class="label">会话有效期至</div><div class="value">—</div></div></div>
@@ -135,7 +199,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:#
     </div></div>
   <p style="color:var(--muted);font-size:12px;margin:10px 0 0">
     三种方式由 Zero Trust 的 Identity providers 提供，登录页由 Cloudflare 托管，Worker 不接触任何 client secret。
-    点击右上角「切换登录方式 / 退出」即可重新选择。
+    点击右上角「退出登录」结束当前会话，即可回到登录页重新选择。
   </p>
 
   <div class="section-title">数据来源状态</div>
@@ -974,12 +1038,20 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:#
     </div></div></div>
   </section>
 
+  <div class="section-title">头像与登录记录</div>
+  <div class="facts">
+    <div class="fact"><div class="label">R2 头像存储</div><div class="value">未绑定</div></div>
+    <div class="fact"><div class="label">D1 登录日志</div><div class="value">未绑定</div></div>
+    <div class="fact"><div class="label">记录列表</div><div class="value"><a href="/logs">查看登录记录 →</a></div></div>
+  </div>
+
   <div class="section-title">信息边界</div>
   <div class="limits">
     <h3>信息边界：哪些拿得到，哪些拿不到</h3>
     <ul>
       <li><strong>能拿到</strong>：Access 归一化后的身份（email、name、idp、groups、devicePosture、ip、geo、device_sessions…）、JWT 标准与自定义 claims、以及 <code>request.cf</code> 里的地理/ASN/TLS 数据。本页已把这些字段<strong>全量递归展开</strong>，不做白名单过滤。</li>
       <li><strong>拿不到</strong>：GitHub 的 <code>login / avatar_url / bio / company</code>、Google 的 <code>picture / locale / hd</code> 等 IdP 原始 profile。Access 只向应用交付归一化身份，<strong>不透传 IdP 的 access token</strong>，Worker 无法代用户调用 GitHub/Google API。</li>
+      <li><strong>头像来自 R2，不是 IdP</strong>：由于上面这条限制，本项目用 Cloudflare R2 保存用户自行上传的头像，按 <code>user_uuid</code> 命名，经 <code>/api/avatar</code> 读写；未上传时降级显示姓名首字母。要自动同步 IdP 头像，只能改用通用 OIDC + 自定义 claims，或在应用内另做 OAuth。</li>
       <li><strong>groups 有坑</strong>：写入 JWT 的 <code>custom</code> claims 超过约 1 KB 会被从尾部裁剪，groups 最容易丢；完整分组请走 <code>/cdn-cgi/access/get-identity</code>（本页通道 ③）。GitHub/Google 内置集成也不会自动带 groups，只有通用 OIDC/SAML IdP 支持显式配置 claims。</li>
       <li><strong>想拿到原始 profile 的三条路</strong>：① 改用通用 OIDC 集成并配置自定义 claims / SCIM；② 应用内另行实现 GitHub/Google OAuth（自己保管 client secret 与 token，等于绕开 Access 的部分价值）；③ 让用户在前端自行授权后由浏览器直连 IdP API。MVP 阶段不建议，先把网关身份用好。</li>
       <li><strong>安全约定</strong>：<code>cookie</code>、<code>authorization</code>、<code>cf-access-jwt-assertion</code> 等头已脱敏；JWT 验签失败会直接返回 403，不会把未验证的声明渲染出来。</li>
@@ -991,7 +1063,7 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:#
     <summary style="cursor:pointer;color:var(--blue);font-size:13px;margin-bottom:10px">展开完整 JSON（可直接复制给后端排查）</summary>
     <pre class="raw" id="raw-json">{
   &quot;meta&quot;: {
-    &quot;collectedAt&quot;: &quot;2026-11-06T09:30:49.699Z&quot;,
+    &quot;collectedAt&quot;: &quot;2026-11-07T15:26:02.759Z&quot;,
     &quot;appName&quot;: &quot;Identity Console&quot;,
     &quot;teamDomain&quot;: &quot;https://demo-team.cloudflareaccess.com&quot;,
     &quot;audConfigured&quot;: false,
@@ -1191,13 +1263,14 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:#
     <button class="btn primary" id="copy-json" type="button">复制 JSON</button>
     <button class="btn" id="download-json" type="button">下载 .json</button>
     <button class="btn" id="expand-all" type="button" data-open="0">展开全部</button>
+    <a class="btn" href="/logs">登录记录</a>
     <a class="btn" href="/api/snapshot" target="_blank" rel="noopener">API: /api/snapshot</a>
     <a class="btn" href="/api/identity" target="_blank" rel="noopener">API: /api/identity</a>
+    <a class="btn" href="/api/logs" target="_blank" rel="noopener">API: /api/logs</a>
   </div>
-
   <footer>
-    <span>Cloudflare Workers + Zero Trust Access · GitHub / Google / One-time PIN</span>
-    <span>快照生成于 2026-11-06T09:30:49.699Z</span>
+    <span>Cloudflare Workers + Zero Trust Access · R2 头像 / D1 登录日志</span>
+    <span>快照生成于 2026-11-07T15:26:02.759Z</span>
   </footer>
 </div>
 <script>(function(){
@@ -1227,6 +1300,29 @@ footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);color:#
     for (var i=0;i<ds.length;i++) ds[i].open = open;
     expandBtn.setAttribute('data-open', open ? '1' : '0');
     expandBtn.textContent = open ? '收起全部' : '展开全部';
+  });
+  var avatarImg = document.getElementById('avatar-img');
+  if (avatarImg) {
+    avatarImg.addEventListener('load', function(){ avatarImg.style.display='block'; var fb=document.getElementById('avatar-fallback'); if(fb) fb.style.display='none'; });
+    avatarImg.addEventListener('error', function(){ avatarImg.style.display='none'; var fb=document.getElementById('avatar-fallback'); if(fb) fb.style.display='grid'; });
+    if (avatarImg.complete && avatarImg.naturalWidth > 0) avatarImg.dispatchEvent(new Event('load'));
+  }
+  var fileInput = document.getElementById('avatar-file');
+  var uploadBtn = document.getElementById('avatar-upload');
+  var uploadMsg = document.getElementById('avatar-msg');
+  if (uploadBtn && fileInput) uploadBtn.addEventListener('click', function(){
+    var f = fileInput.files && fileInput.files[0];
+    if (!f) { if(uploadMsg) uploadMsg.textContent='请先选择图片'; return; }
+    if (f.size > 2*1024*1024) { if(uploadMsg) uploadMsg.textContent='图片不能超过 2MB'; return; }
+    uploadBtn.disabled = true; if(uploadMsg) uploadMsg.textContent='上传中…';
+    fetch('/api/avatar', { method:'POST', headers:{'content-type': f.type || 'application/octet-stream'}, body: f })
+      .then(function(r){ return r.json().then(function(d){ return { ok:r.ok, d:d }; }); })
+      .then(function(x){
+        if(uploadMsg) uploadMsg.textContent = x.d.ok ? '上传成功' : ('上传失败：' + (x.d.reason || x.d.error || '未知原因'));
+        if (x.d.ok && avatarImg) avatarImg.src = '/api/avatar?t=' + Date.now();
+      })
+      .catch(function(e){ if(uploadMsg) uploadMsg.textContent='上传失败：' + e.message; })
+      .then(function(){ uploadBtn.disabled = false; });
   });
 })();</script>
 </body>
